@@ -21,7 +21,7 @@ app.use('/api/user', userRoutes)
 app.use('/api/weather', weatherRoutes)
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client', 'dist')))
+  app.use(express.static(path.join(__dirname, 'app', 'client', 'dist')))
   app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, 'app', 'client', 'dist', 'index.html'))
   })
