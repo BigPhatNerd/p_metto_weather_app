@@ -4,9 +4,9 @@ import GoogleMapsLoader from './GoogleMapsLoader'
 import { UserContext } from '../contexts/UserContext'
 
 function LocationInput({ searchFormat }) {
-  const { updateUserLocation, location, setLocation, getWeather, setWeather } =
+  const { updateUserLocation, location, setLocation, getWeather } =
     useContext(UserContext)
-  // const [location, setLocation] = useState({ address: '' })
+
   const [validationMessage, setValidationMessage] = useState('')
   const inputRef = useRef(null)
 
@@ -54,8 +54,7 @@ function LocationInput({ searchFormat }) {
       }
       if (latitude && longitude) {
         try {
-          const weatherData = await getWeather(location)
-          setWeather(weatherData)
+          await getWeather(location)
         } catch (error) {
           setValidationMessage(
             error.response ? error.response.data.message : error.message
@@ -69,8 +68,7 @@ function LocationInput({ searchFormat }) {
       const { city, state } = location
       if (city && state && state.length === 2) {
         try {
-          const weatherData = await getWeather({ city, state })
-          setWeather(weatherData)
+          await getWeather({ city, state })
         } catch (error) {
           setValidationMessage(
             error.response ? error.response.data.message : error.message
@@ -84,8 +82,7 @@ function LocationInput({ searchFormat }) {
       const { latitude, longitude, address } = location
       if (latitude && longitude && address) {
         try {
-          const weatherData = await getWeather(location)
-          setWeather(weatherData)
+          await getWeather(location)
         } catch (error) {
           setValidationMessage(
             error.response ? error.response.data.message : error.message
@@ -134,42 +131,50 @@ function LocationInput({ searchFormat }) {
     return formattedAddress
   }
 
-  const handleGeolocation = () => {
+  const handleGeolocation = async () => {
     if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          const geocoder = new window.google.maps.Geocoder()
-          const latlng = new window.google.maps.LatLng(latitude, longitude)
+      try {
+        const position = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject)
+        )
+        const { latitude, longitude } = position.coords
+        const geocoder = new window.google.maps.Geocoder()
+        const latlng = new window.google.maps.LatLng(latitude, longitude)
 
+        const results = await new Promise((resolve, reject) =>
           geocoder.geocode({ location: latlng }, (results, status) => {
             if (status === 'OK') {
-              if (results[0]) {
-                const infoToFormat = results[0].address_components
-                updateUserLocation({
-                  latitude,
-                  longitude,
-                  address: formatAddress(infoToFormat),
-                })
-                setValidationMessage('')
-              } else {
-                console.error('No results found')
-                setValidationMessage('No results found')
-              }
+              resolve(results)
             } else {
-              console.error('Geocoder failed due to: ' + status)
-              setValidationMessage('Geocoder failed')
+              reject(new Error('Geocoder failed due to: ' + status))
             }
           })
-        },
-        (error) => {
-          console.error('Error occurred while fetching geolocation: ', error)
-          setValidationMessage('Error occurred while fetching geolocation')
+        )
+
+        if (results[0]) {
+          const infoToFormat = results[0].address_components
+          const locationData = {
+            latitude,
+            longitude,
+            address: formatAddress(infoToFormat),
+          }
+          updateUserLocation(locationData)
+          await getWeather(locationData)
+          setValidationMessage('')
+        } else {
+          console.error('No results found')
+          setValidationMessage('No results found')
+          setTimeout(() => setValidationMessage(''), 3000)
         }
-      )
+      } catch (error) {
+        console.error('Error occurred while fetching geolocation: ', error)
+        setValidationMessage('Error occurred while fetching geolocation')
+        setTimeout(() => setValidationMessage(''), 3000)
+      }
     } else {
       console.error('Geolocation is not supported by this browser.')
       setValidationMessage('Geolocation is not supported by this browser')
+      setTimeout(() => setValidationMessage(''), 3000)
     }
   }
 

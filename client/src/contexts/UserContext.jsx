@@ -70,7 +70,7 @@ const UserProvider = ({ children }) => {
           location,
         },
       })
-      return response.data
+      setWeather(response.data)
     } catch (error) {
       console.error(error)
       throw error

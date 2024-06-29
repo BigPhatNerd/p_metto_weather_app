@@ -2,9 +2,11 @@
 import { useContext } from 'react'
 import { UserContext } from '../contexts/UserContext'
 
-function WeatherDisplay({ weather }) {
-  const { addFavorite, location } = useContext(UserContext)
+function WeatherDisplay() {
+  const { addFavorite, location, weather } = useContext(UserContext)
+  console.log({ weather })
 
+  if (!weather) return null
   return (
     <div>
       <h1> Weather in {weather?.name}</h1>

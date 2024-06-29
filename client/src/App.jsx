@@ -3,10 +3,9 @@ import WeatherDisplay from './components/WeatherDisplay'
 import SelectSearchFormat from './components/SelectSearchFormat'
 import ListFavorites from './components/ListFavorites'
 import GoogleMapsLoader from './components/GoogleMapsLoader'
-import { UserProvider, UserContext } from './contexts/UserContext'
+import { UserProvider } from './contexts/UserContext'
 
 function MainApp() {
-  const { favorites, weather } = useContext(UserContext)
   const [isMapsLoaded, setIsMapsLoaded] = useState(false)
 
   const handleGoogleMapsLoad = () => {
@@ -17,9 +16,9 @@ function MainApp() {
     <UserProvider>
       <div>
         <GoogleMapsLoader onLoad={handleGoogleMapsLoad} />
+        <WeatherDisplay />
         {isMapsLoaded && <SelectSearchFormat />}
-        {weather && <WeatherDisplay weather={weather} />}
-        {favorites.length > 0 && <ListFavorites />}
+        <ListFavorites />
       </div>
     </UserProvider>
   )

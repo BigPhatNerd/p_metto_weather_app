@@ -8,12 +8,10 @@ const getWeather = async (location) => {
   let response
   try {
     if (latitude && longitude) {
-      console.log('hitting latitude and longitude')
       response = await axios.get(
         `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${process.env.OPENWEATHERMAP_API_KEY}`
       )
     } else if (city && state) {
-      console.log('hitting city and state')
       response = await axios.get(
         `https://api.openweathermap.org/data/2.5/weather?q=${city},${state},&appid=${process.env.OPENWEATHERMAP_API_KEY}`
       )
@@ -22,7 +20,7 @@ const getWeather = async (location) => {
     if (response.data.cod !== 200) {
       throw new Error(response.data.message)
     }
-    console.log({ ErrorResponseData: response.data })
+    console.log({ responseData: response.data })
     return response.data
   } catch (error) {
     console.error('Error fetching weather data:', error.message)

@@ -2,13 +2,12 @@ import { useContext, useState } from 'react'
 import { UserContext } from '../contexts/UserContext'
 
 function ListFavorites() {
-  const { favorites, getWeather, setWeather } = useContext(UserContext)
+  const { favorites, getWeather } = useContext(UserContext)
   const [errorMessage, setErrorMessage] = useState('')
 
   const handleFavoriteClick = async (fav) => {
     try {
-      const weatherData = await getWeather(fav)
-      setWeather(weatherData)
+      await getWeather(fav)
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
@@ -23,7 +22,7 @@ function ListFavorites() {
       <h3>Favorites</h3>
       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
       <ul>
-        {favorites &&
+        {favorites.length > 0 &&
           favorites.map((fav, index) => {
             if (fav.address) {
               return (
