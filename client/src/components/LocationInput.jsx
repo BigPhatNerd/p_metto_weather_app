@@ -222,7 +222,7 @@ function LocationInput({ searchFormat }) {
             Use Current Location
           </button>
         )}
-        {searchFormat !== 'current location' && (
+        {searchFormat !== 'current location' && !isButtonDisabled() && (
           <button disabled={isButtonDisabled()} type="submit">
             Get Weather
           </button>

@@ -13,7 +13,7 @@ function ListFavorites() {
         {favorites.length > 0 &&
           favorites.map((fav, index) => (
             <li key={index}>
-              <span onClick={() => getWeather(fav)}>
+              <span className="favorite-item" onClick={() => getWeather(fav)}>
                 {fav.address || `${fav.city}, ${fav.state}`}
               </span>
               <button
