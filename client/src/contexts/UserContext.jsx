@@ -96,7 +96,6 @@ const UserProvider = ({ children }) => {
         return
       }
       const response = await axios.post('/api/user/favorites', { location })
-      console.log('THISSSSS: ', { responseData: response.data })
       setFavorites(response.data)
       setUser((prevState) => ({
         ...prevState,

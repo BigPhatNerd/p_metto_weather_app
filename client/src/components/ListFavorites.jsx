@@ -7,7 +7,7 @@ function ListFavorites() {
   if (!favorites || favorites.length === 0) return null
 
   return (
-    <div>
+    <div className="favorites">
       <h3>Favorites</h3>
       <ul>
         {favorites.length > 0 &&
@@ -16,7 +16,12 @@ function ListFavorites() {
               <span onClick={() => getWeather(fav)}>
                 {fav.address || `${fav.city}, ${fav.state}`}
               </span>
-              <button onClick={() => deleteFavorite(fav)}>Delete</button>
+              <button
+                className="small-button"
+                onClick={() => deleteFavorite(fav)}
+              >
+                Delete
+              </button>
             </li>
           ))}
       </ul>

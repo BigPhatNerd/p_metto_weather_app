@@ -1,4 +1,5 @@
 import { useState, useContext } from 'react'
+import './styles.css'
 import WeatherDisplay from './components/WeatherDisplay'
 import SelectSearchFormat from './components/SelectSearchFormat'
 import ListFavorites from './components/ListFavorites'
