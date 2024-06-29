@@ -9,7 +9,11 @@ const UserProvider = ({ children }) => {
   const [favorites, setFavorites] = useState([])
   const [weather, setWeather] = useState(null)
   const [currentLocation, setCurrentLocation] = useState(null)
-  const [location, setLocation] = useState({ address: '' })
+  const [location, setLocation] = useState({
+    address: '',
+    city: '',
+    state: '',
+  })
 
   useEffect(() => {
     fetchUser()

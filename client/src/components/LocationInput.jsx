@@ -30,11 +30,8 @@ function LocationInput({ onSubmit, searchFormat }) {
                 longitude: lng(),
                 address: formattedAddress,
               }
-              console.log('This is the google stuff')
-              console.log({ locationData })
               setLocation(locationData)
               setValidationMessage('')
-              // onSubmit(locationData)
             } else {
               setValidationMessage('Please select a valid location')
             }
@@ -151,6 +148,18 @@ function LocationInput({ onSubmit, searchFormat }) {
     }
   }
 
+  const isButtonDisabled = () => {
+    if (validationMessage) {
+      return true
+    }
+    if (searchFormat === 'google') {
+      return !location.address || !location.latitude || !location.longitude
+    }
+    if (searchFormat === 'city and state') {
+      return !location.city || !location.state || location.state.length < 2
+    }
+  }
+
   return (
     <div>
       {searchFormat === 'google' && <GoogleMapsLoader onLoad={() => {}} />}
@@ -169,7 +178,7 @@ function LocationInput({ onSubmit, searchFormat }) {
             placeholder="Enter a location"
           />
         )}
-        {searchFormat === 'manual' && (
+        {searchFormat === 'city and state' && (
           <>
             <input
               type="text"
@@ -182,19 +191,28 @@ function LocationInput({ onSubmit, searchFormat }) {
             <input
               type="text"
               value={location.state}
-              onChange={({ target }) =>
-                setLocation({ ...location, state: target.value })
-              }
+              onChange={({ target }) => {
+                let value = target.value.toUpperCase()
+                if (value.length > 2) {
+                  value = value.slice(0, 2)
+                }
+                setLocation({ ...location, state: value })
+              }}
               placeholder="Enter state"
+              maxLength="2"
             />
           </>
         )}
-        {searchFormat === 'currentLocation' && (
+        {searchFormat === 'current location' && (
           <button type="button" onClick={handleGeolocation}>
             Use Current Location
           </button>
         )}
-        <button type="submit">Get Weather</button>
+        {searchFormat !== 'current location' && (
+          <button disabled={isButtonDisabled()} type="submit">
+            Get Weather
+          </button>
+        )}
       </form>
       {validationMessage && <p style={{ color: 'red' }}>{validationMessage}</p>}
     </div>

@@ -4,7 +4,7 @@ import { UserContext } from '../contexts/UserContext'
 
 function WeatherDisplay({ weather }) {
   const { addFavorite, location } = useContext(UserContext)
-  console.log({ weather })
+
   return (
     <div>
       <h1> Weather in {weather?.name}</h1>

@@ -29,7 +29,7 @@ function MainApp() {
   const handleGoogleMapsLoad = () => {
     setIsMapsLoaded(true)
   }
-  console.log({ isMapsLoaded })
+
   return (
     <UserProvider>
       <div>
