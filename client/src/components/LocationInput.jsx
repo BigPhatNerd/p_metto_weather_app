@@ -6,9 +6,29 @@ import { UserContext } from '../contexts/UserContext'
 function LocationInput({ searchFormat }) {
   const { updateUserLocation, location, setLocation, getWeather } =
     useContext(UserContext)
-
+  const [loading, setLoading] = useState(false)
   const [validationMessage, setValidationMessage] = useState('')
+  const [loadingText, setLoadingText] = useState('Loading')
+
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    let intervalId
+
+    if (loading) {
+      let count = 0
+      intervalId = setInterval(() => {
+        setLoadingText(`Loading${'.'.repeat(count % 4)}`)
+        count++
+      }, 500)
+    } else {
+      setLoadingText('Loading')
+    }
+
+    return () => {
+      clearInterval(intervalId)
+    }
+  }, [loading])
 
   useEffect(() => {
     if (searchFormat === 'google') {
@@ -54,12 +74,15 @@ function LocationInput({ searchFormat }) {
       }
       if (latitude && longitude) {
         try {
+          setLoading(true)
           await getWeather(location)
         } catch (error) {
           setValidationMessage(
             error.response ? error.response.data.message : error.message
           )
           setTimeout(() => setValidationMessage(''), 3000)
+        } finally {
+          setLoading(false)
         }
       } else {
         setValidationMessage('Please enter a valid address.')
@@ -68,12 +91,15 @@ function LocationInput({ searchFormat }) {
       const { city, state } = location
       if (city && state && state.length === 2) {
         try {
+          setLoading(true)
           await getWeather({ city, state })
         } catch (error) {
           setValidationMessage(
             error.response ? error.response.data.message : error.message
           )
           setTimeout(() => setValidationMessage(''), 3000)
+        } finally {
+          setLoading(false)
         }
       } else {
         setValidationMessage('Please enter both city and state.')
@@ -82,12 +108,15 @@ function LocationInput({ searchFormat }) {
       const { latitude, longitude, address } = location
       if (latitude && longitude && address) {
         try {
+          setLoading(true)
           await getWeather(location)
         } catch (error) {
           setValidationMessage(
             error.response ? error.response.data.message : error.message
           )
           setTimeout(() => setValidationMessage(''), 3000)
+        } finally {
+          setLoading(false)
         }
       } else {
         setValidationMessage(
@@ -133,6 +162,7 @@ function LocationInput({ searchFormat }) {
 
   const handleGeolocation = async () => {
     if (navigator.geolocation) {
+      setLoading(true)
       try {
         const position = await new Promise((resolve, reject) =>
           navigator.geolocation.getCurrentPosition(resolve, reject)
@@ -170,6 +200,8 @@ function LocationInput({ searchFormat }) {
         console.error('Error occurred while fetching geolocation: ', error)
         setValidationMessage('Error occurred while fetching geolocation')
         setTimeout(() => setValidationMessage(''), 3000)
+      } finally {
+        setLoading(false)
       }
     } else {
       console.error('Geolocation is not supported by this browser.')
@@ -179,9 +211,8 @@ function LocationInput({ searchFormat }) {
   }
 
   const isButtonDisabled = () => {
-    if (validationMessage) {
-      return true
-    }
+    if (validationMessage) return true
+    if (loading) return true
     if (searchFormat === 'google') {
       return !location.address || !location.latitude || !location.longitude
     }
@@ -234,7 +265,7 @@ function LocationInput({ searchFormat }) {
           </>
         )}
         {searchFormat === 'current location' && (
-          <button type="button" onClick={handleGeolocation}>
+          <button type="button" onClick={handleGeolocation} disabled={loading}>
             Use Current Location
           </button>
         )}
@@ -244,6 +275,7 @@ function LocationInput({ searchFormat }) {
           </button>
         )}
       </form>
+      {loading && <p>Loading...</p>}
       {validationMessage && <p style={{ color: 'red' }}>{validationMessage}</p>}
     </div>
   )
