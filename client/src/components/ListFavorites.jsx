@@ -2,42 +2,23 @@ import { useContext, useState } from 'react'
 import { UserContext } from '../contexts/UserContext'
 
 function ListFavorites() {
-  const { favorites, getWeather } = useContext(UserContext)
-  const [errorMessage, setErrorMessage] = useState('')
+  const { favorites, getWeather, deleteFavorite } = useContext(UserContext)
 
-  const handleFavoriteClick = async (fav) => {
-    try {
-      await getWeather(fav)
-      setErrorMessage('')
-    } catch (error) {
-      setErrorMessage(
-        error.response ? error.response.data.message : error.message
-      )
-      setTimeout(() => setErrorMessage(''), 3000)
-      console.error(error)
-    }
-  }
+  if (!favorites || favorites.length === 0) return null
+
   return (
     <div>
       <h3>Favorites</h3>
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
       <ul>
         {favorites.length > 0 &&
-          favorites.map((fav, index) => {
-            if (fav.address) {
-              return (
-                <li key={index} onClick={() => handleFavoriteClick(fav)}>
-                  {fav.address}
-                </li>
-              )
-            } else if (fav.city && fav.state) {
-              return (
-                <li key={index} onClick={() => handleFavoriteClick(fav)}>
-                  {fav.city}, {fav.state}
-                </li>
-              )
-            }
-          })}
+          favorites.map((fav, index) => (
+            <li key={index}>
+              <span onClick={() => getWeather(fav)}>
+                {fav.address || `${fav.city}, ${fav.state}`}
+              </span>
+              <button onClick={() => deleteFavorite(fav)}>Delete</button>
+            </li>
+          ))}
       </ul>
     </div>
   )

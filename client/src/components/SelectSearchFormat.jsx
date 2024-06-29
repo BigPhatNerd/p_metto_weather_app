@@ -1,11 +1,18 @@
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import LocationInput from './LocationInput'
+import { UserContext } from '../contexts/UserContext'
 
 function SelectSearchFormat() {
   const [searchFormat, setSearchFormat] = useState('google')
+  const { setLocation } = useContext(UserContext)
 
   const handleFormatChange = (event) => {
     setSearchFormat(event.target.value)
+    resetLocation()
+  }
+
+  const resetLocation = () => {
+    setLocation({ address: '', city: '', state: '' })
   }
 
   return (

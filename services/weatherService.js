@@ -20,7 +20,7 @@ const getWeather = async (location) => {
     if (response.data.cod !== 200) {
       throw new Error(response.data.message)
     }
-    console.log({ responseData: response.data })
+
     return response.data
   } catch (error) {
     console.error('Error fetching weather data:', error.message)

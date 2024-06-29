@@ -43,4 +43,31 @@ const addLocation = async (req, res) => {
   }
 }
 
-module.exports = { getUser, addFavorite, addLocation }
+const deleteFavorite = async (req, res) => {
+  const { location } = req.body
+  try {
+    const user = req.user
+
+    if (user) {
+      user.favorites = user.favorites.filter((fav) => {
+        return (
+          fav.address !== location?.address &&
+          !(fav.city === location?.city && fav.state === location?.state) &&
+          !(
+            fav.latitude === location?.latitude &&
+            fav.longitude === location?.longitude
+          )
+        )
+      })
+      await user.save()
+
+      res.json(user.favorites)
+    } else {
+      res.status(404).json({ message: 'User not found' })
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message })
+  }
+}
+
+module.exports = { getUser, addFavorite, addLocation, deleteFavorite }

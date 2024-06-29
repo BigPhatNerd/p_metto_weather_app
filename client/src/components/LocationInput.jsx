@@ -4,8 +4,13 @@ import GoogleMapsLoader from './GoogleMapsLoader'
 import { UserContext } from '../contexts/UserContext'
 
 function LocationInput({ searchFormat }) {
-  const { updateUserLocation, location, setLocation, getWeather } =
-    useContext(UserContext)
+  const {
+    updateUserLocation,
+    location,
+    setLocation,
+    getWeather,
+    errorMessage,
+  } = useContext(UserContext)
   const [loading, setLoading] = useState(false)
   const [validationMessage, setValidationMessage] = useState('')
   const [loadingText, setLoadingText] = useState('Loading')
@@ -45,11 +50,13 @@ function LocationInput({ searchFormat }) {
             const place = autocomplete.getPlace()
             if (place.geometry) {
               const { lat, lng } = place.geometry.location
-              const formattedAddress = formatAddress(place.address_components)
+
               const locationData = {
                 latitude: lat(),
                 longitude: lng(),
-                address: formattedAddress,
+                address: place.formatted_address,
+                city: place.address_components[1].long_name,
+                state: place.address_components[3].short_name,
               }
               setLocation(locationData)
               setValidationMessage('')
@@ -60,8 +67,6 @@ function LocationInput({ searchFormat }) {
         }
       }
       initAutocomplete()
-    } else if (searchFormat === 'current location') {
-      handleGeolocation()
     }
   }, [searchFormat])
 
@@ -76,11 +81,6 @@ function LocationInput({ searchFormat }) {
         try {
           setLoading(true)
           await getWeather(location)
-        } catch (error) {
-          setValidationMessage(
-            error.response ? error.response.data.message : error.message
-          )
-          setTimeout(() => setValidationMessage(''), 3000)
         } finally {
           setLoading(false)
         }
@@ -93,11 +93,6 @@ function LocationInput({ searchFormat }) {
         try {
           setLoading(true)
           await getWeather({ city, state })
-        } catch (error) {
-          setValidationMessage(
-            error.response ? error.response.data.message : error.message
-          )
-          setTimeout(() => setValidationMessage(''), 3000)
         } finally {
           setLoading(false)
         }
@@ -110,11 +105,6 @@ function LocationInput({ searchFormat }) {
         try {
           setLoading(true)
           await getWeather(location)
-        } catch (error) {
-          setValidationMessage(
-            error.response ? error.response.data.message : error.message
-          )
-          setTimeout(() => setValidationMessage(''), 3000)
         } finally {
           setLoading(false)
         }
@@ -124,40 +114,6 @@ function LocationInput({ searchFormat }) {
         )
       }
     }
-  }
-
-  function formatAddress(addressComponents) {
-    let streetNumber = ''
-    let route = ''
-    let locality = ''
-    let state = ''
-    let postalCode = ''
-
-    addressComponents.forEach((component) => {
-      const type = component.types[0]
-      switch (type) {
-        case 'street_number':
-          streetNumber = component.long_name
-          break
-        case 'route':
-          route = component.short_name
-          break
-        case 'locality':
-          locality = component.long_name
-          break
-        case 'administrative_area_level_1':
-          state = component.short_name
-          break
-        case 'postal_code':
-          postalCode = component.long_name
-          break
-        default:
-          break
-      }
-    })
-
-    const formattedAddress = `${streetNumber} ${route}\n${locality}, ${state} ${postalCode}`
-    return formattedAddress
   }
 
   const handleGeolocation = async () => {
@@ -182,24 +138,20 @@ function LocationInput({ searchFormat }) {
         )
 
         if (results[0]) {
-          const infoToFormat = results[0].address_components
           const locationData = {
             latitude,
             longitude,
-            address: formatAddress(infoToFormat),
+            address:
+              results[0].address_components[0].long_name +
+              ' ' +
+              results[0].address_components[1].long_name,
+            city: results[0].address_components[2].long_name,
+            state: results[0].address_components[4].short_name,
           }
+          setLocation(locationData)
           updateUserLocation(locationData)
           await getWeather(locationData)
-          setValidationMessage('')
-        } else {
-          console.error('No results found')
-          setValidationMessage('No results found')
-          setTimeout(() => setValidationMessage(''), 3000)
         }
-      } catch (error) {
-        console.error('Error occurred while fetching geolocation: ', error)
-        setValidationMessage('Error occurred while fetching geolocation')
-        setTimeout(() => setValidationMessage(''), 3000)
       } finally {
         setLoading(false)
       }
@@ -234,6 +186,7 @@ function LocationInput({ searchFormat }) {
               if (target.value === '') {
                 setValidationMessage('')
               }
+
               setLocation({ address: target.value })
             }}
             placeholder="Enter a location"
@@ -275,7 +228,8 @@ function LocationInput({ searchFormat }) {
           </button>
         )}
       </form>
-      {loading && <p>Loading...</p>}
+      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+      {loading && <p style={{ color: 'green' }}>{loadingText}</p>}
       {validationMessage && <p style={{ color: 'red' }}>{validationMessage}</p>}
     </div>
   )
