@@ -6,25 +6,8 @@ import GoogleMapsLoader from './components/GoogleMapsLoader'
 import { UserProvider, UserContext } from './contexts/UserContext'
 
 function MainApp() {
-  const {
-    user,
-    favorites,
-    weather,
-    setWeather,
-    addFavorite,
-    getWeather,
-    updateUserLocation,
-  } = useContext(UserContext)
+  const { favorites, weather } = useContext(UserContext)
   const [isMapsLoaded, setIsMapsLoaded] = useState(false)
-
-  const handleGetWeather = async (location) => {
-    try {
-      const weatherData = await getWeather(location)
-      setWeather(weatherData)
-    } catch (error) {
-      console.error(error)
-    }
-  }
 
   const handleGoogleMapsLoad = () => {
     setIsMapsLoaded(true)
@@ -34,7 +17,7 @@ function MainApp() {
     <UserProvider>
       <div>
         <GoogleMapsLoader onLoad={handleGoogleMapsLoad} />
-        {isMapsLoaded && <SelectSearchFormat onSubmit={handleGetWeather} />}
+        {isMapsLoaded && <SelectSearchFormat />}
         {weather && <WeatherDisplay weather={weather} />}
         {favorites.length > 0 && <ListFavorites />}
       </div>

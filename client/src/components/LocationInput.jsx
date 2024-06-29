@@ -3,8 +3,9 @@ import { useState, useEffect, useRef, useContext } from 'react'
 import GoogleMapsLoader from './GoogleMapsLoader'
 import { UserContext } from '../contexts/UserContext'
 
-function LocationInput({ onSubmit, searchFormat }) {
-  const { updateUserLocation, location, setLocation } = useContext(UserContext)
+function LocationInput({ searchFormat }) {
+  const { updateUserLocation, location, setLocation, getWeather, setWeather } =
+    useContext(UserContext)
   // const [location, setLocation] = useState({ address: '' })
   const [validationMessage, setValidationMessage] = useState('')
   const inputRef = useRef(null)
@@ -44,7 +45,7 @@ function LocationInput({ onSubmit, searchFormat }) {
     }
   }, [searchFormat])
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     if (searchFormat === 'google') {
       const { latitude, longitude, address } = location
@@ -52,21 +53,45 @@ function LocationInput({ onSubmit, searchFormat }) {
         return
       }
       if (latitude && longitude) {
-        onSubmit(location)
+        try {
+          const weatherData = await getWeather(location)
+          setWeather(weatherData)
+        } catch (error) {
+          setValidationMessage(
+            error.response ? error.response.data.message : error.message
+          )
+          setTimeout(() => setValidationMessage(''), 3000)
+        }
       } else {
         setValidationMessage('Please enter a valid address.')
       }
     } else if (searchFormat === 'city and state') {
       const { city, state } = location
-      if (city && state) {
-        onSubmit({ city, state })
+      if (city && state && state.length === 2) {
+        try {
+          const weatherData = await getWeather({ city, state })
+          setWeather(weatherData)
+        } catch (error) {
+          setValidationMessage(
+            error.response ? error.response.data.message : error.message
+          )
+          setTimeout(() => setValidationMessage(''), 3000)
+        }
       } else {
         setValidationMessage('Please enter both city and state.')
       }
     } else if (searchFormat === 'current location') {
       const { latitude, longitude, address } = location
       if (latitude && longitude && address) {
-        onSubmit(location)
+        try {
+          const weatherData = await getWeather(location)
+          setWeather(weatherData)
+        } catch (error) {
+          setValidationMessage(
+            error.response ? error.response.data.message : error.message
+          )
+          setTimeout(() => setValidationMessage(''), 3000)
+        }
       } else {
         setValidationMessage(
           'Failed to get current location. Please try again.'

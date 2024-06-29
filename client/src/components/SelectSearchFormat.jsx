@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import LocationInput from './LocationInput'
 
-function SelectSearchFormat({ onSubmit }) {
+function SelectSearchFormat() {
   const [searchFormat, setSearchFormat] = useState('google')
 
   const handleFormatChange = (event) => {
     setSearchFormat(event.target.value)
   }
-  console.log({ searchFormat })
+
   return (
     <div>
       <div>
@@ -39,7 +39,7 @@ function SelectSearchFormat({ onSubmit }) {
           Use Current Location
         </label>
       </div>
-      <LocationInput onSubmit={onSubmit} searchFormat={searchFormat} />
+      <LocationInput searchFormat={searchFormat} />
     </div>
   )
 }

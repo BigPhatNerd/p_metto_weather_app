@@ -15,7 +15,6 @@ const getUser = async (req, res) => {
 
 const addFavorite = async (req, res) => {
   const { location } = req.body
-  console.log({ location })
   try {
     const user = req.user
     if (user) {
@@ -31,14 +30,12 @@ const addFavorite = async (req, res) => {
 }
 
 const addLocation = async (req, res) => {
-  console.log({ body: req.body })
   const { location } = req.body
   try {
     const user = req.user
     if (user) {
       user.currentLocation = location
       await user.save()
-      console.log({ user })
       res.json(user.currentLocation)
     }
   } catch (error) {
