@@ -14,7 +14,8 @@
     "client": "npm start --prefix app/client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "preview": "vite preview",
-    "heroku-postbuild": "cd app/client && npm install && npm run build"
+    "heroku-prebuild": "npm install && cd app/client && npm install",
+    "heroku-postbuild": "cd app/client && npm run build"
   },
   "keywords": [],
   "author": "",
