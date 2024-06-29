@@ -4,15 +4,15 @@
   "description": "",
   "main": "server.js",
   "engines": {
-    "node": ">=20.3.0",
-    "npm": ">=9.6"
+    "node": "20.x",
+    "npm": "9.x"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "vite build",
     "start": "node server.js",
     "server": "nodemon server.js",
-    "client": "npm start --prefix client",
+    "client": "npm start --prefix app/client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "preview": "vite preview",
     "heroku-postbuild": "cd app/client && npm install && npm run build"
