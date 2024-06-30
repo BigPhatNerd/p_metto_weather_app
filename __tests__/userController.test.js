@@ -2,7 +2,7 @@ const request = require('supertest')
 const express = require('express')
 const mongoose = require('mongoose')
 const cookieParser = require('cookie-parser')
-const dotenv = require('dotenv')
+
 const {
   getUser,
   addFavorite,
@@ -11,8 +11,6 @@ const {
 } = require('../controllers/userController')
 const { authUser } = require('../middleware/userAuth')
 const User = require('../models/userModel')
-
-dotenv.config()
 
 const app = express()
 app.use(express.json())
@@ -23,9 +21,7 @@ app.get('/api/user', authUserMiddleware, getUser)
 app.post('/api/user/favorites', authUserMiddleware, addFavorite)
 app.put('/api/user/location', authUserMiddleware, addLocation)
 app.delete('/api/user/favorites', authUserMiddleware, deleteFavorite)
-app.get('/api/user/test', (req, res) => {
-  res.send('User route working')
-})
+
 jest.mock('../middleware/userAuth')
 
 describe('User Controller', () => {
@@ -53,12 +49,6 @@ describe('User Controller', () => {
 
   afterEach(async () => {
     jest.clearAllMocks()
-  })
-
-  test('GET api/user/test - testRoute', async () => {
-    const response = await request(app).get('/api/user/test')
-    expect(response.status).toBe(200)
-    expect(response.text).toBe('User route working')
   })
 
   test('GET api/user - getUser', async () => {
