@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react'
+import React, { useState, useContext } from 'react'
 import LocationInput from './LocationInput'
 import { UserContext } from '../contexts/UserContext'
 
