@@ -6,7 +6,7 @@ import { UserContext } from '../contexts/UserContext'
 function LocationInput({ searchFormat }) {
   const {
     updateUserLocation,
-    location,
+
     setLocation,
     getWeather,
     errorMessage,
@@ -14,7 +14,13 @@ function LocationInput({ searchFormat }) {
   const [loading, setLoading] = useState(false)
   const [validationMessage, setValidationMessage] = useState('')
   const [loadingText, setLoadingText] = useState('Loading')
-
+  const [inputValue, setInputValue] = useState({
+    address: '',
+    city: '',
+    state: '',
+    latitude: '',
+    longitude: '',
+  })
   const inputRef = useRef(null)
 
   useEffect(() => {
@@ -56,9 +62,11 @@ function LocationInput({ searchFormat }) {
                 longitude: lng(),
                 address: place.formatted_address,
                 city: place.address_components[1].long_name,
-                state: place.address_components[3].short_name,
+                state:
+                  place.address_components[3]?.short_name ||
+                  place.address_components[1].short_name,
               }
-              setLocation(locationData)
+              setInputValue(locationData)
               setValidationMessage('')
             } else {
               setValidationMessage('Please select a valid location')
@@ -73,14 +81,17 @@ function LocationInput({ searchFormat }) {
   const handleSubmit = async (event) => {
     event.preventDefault()
     if (searchFormat === 'google') {
-      const { latitude, longitude, address } = location
+      const { latitude, longitude, address } = inputValue
       if (address === '') {
         return
       }
       if (latitude && longitude) {
         try {
           setLoading(true)
-          await getWeather(location)
+          const { success } = await getWeather(inputValue)
+          if (success) {
+            setLocation(inputValue)
+          }
         } finally {
           setLoading(false)
         }
@@ -88,11 +99,15 @@ function LocationInput({ searchFormat }) {
         setValidationMessage('Please enter a valid address.')
       }
     } else if (searchFormat === 'city and state') {
-      const { city, state } = location
+      const { city, state } = inputValue
       if (city && state && state.length === 2) {
         try {
           setLoading(true)
-          await getWeather({ city, state })
+          const { success } = await getWeather(inputValue)
+
+          if (success) {
+            setLocation(inputValue)
+          }
         } finally {
           setLoading(false)
         }
@@ -100,11 +115,11 @@ function LocationInput({ searchFormat }) {
         setValidationMessage('Please enter both city and state.')
       }
     } else if (searchFormat === 'current location') {
-      const { latitude, longitude, address } = location
+      const { latitude, longitude, address } = inputValue
       if (latitude && longitude && address) {
         try {
           setLoading(true)
-          await getWeather(location)
+          setLocation(inputValue)
         } finally {
           setLoading(false)
         }
@@ -114,6 +129,7 @@ function LocationInput({ searchFormat }) {
         )
       }
     }
+    setInputValue({ address: '', city: '', state: '' })
   }
 
   const handleGeolocation = async () => {
@@ -166,10 +182,14 @@ function LocationInput({ searchFormat }) {
     if (validationMessage) return true
     if (loading) return true
     if (searchFormat === 'google') {
-      return !location.address || !location.latitude || !location.longitude
+      return (
+        !inputValue.address || !inputValue.latitude || !inputValue.longitude
+      )
     }
     if (searchFormat === 'city and state') {
-      return !location.city || !location.state || location.state.length < 2
+      return (
+        !inputValue.city || !inputValue.state || inputValue.state.length < 2
+      )
     }
   }
 
@@ -181,13 +201,10 @@ function LocationInput({ searchFormat }) {
           <input
             ref={inputRef}
             type="text"
-            value={location.address}
+            value={inputValue.address}
             onChange={({ target }) => {
-              if (target.value === '') {
-                setValidationMessage('')
-              }
-
-              setLocation({ address: target.value })
+              setValidationMessage('')
+              setInputValue({ address: target.value })
             }}
             placeholder="Enter a location"
           />
@@ -196,21 +213,21 @@ function LocationInput({ searchFormat }) {
           <>
             <input
               type="text"
-              value={location.city}
+              value={inputValue.city}
               onChange={({ target }) =>
-                setLocation({ ...location, city: target.value })
+                setInputValue({ ...inputValue, city: target.value })
               }
               placeholder="Enter city"
             />
             <input
               type="text"
-              value={location.state}
+              value={inputValue.state}
               onChange={({ target }) => {
                 let value = target.value.toUpperCase()
                 if (value.length > 2) {
                   value = value.slice(0, 2)
                 }
-                setLocation({ ...location, state: value })
+                setInputValue({ ...inputValue, state: value })
               }}
               placeholder="Enter state"
               maxLength="2"
@@ -228,7 +245,11 @@ function LocationInput({ searchFormat }) {
           </button>
         )}
       </form>
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+      {errorMessage &&
+        (errorMessage.function === 'updateUserLocation' ||
+          errorMessage.function === 'getWeather') && (
+          <p style={{ color: 'red' }}>{errorMessage.message}</p>
+        )}
       {loading && <p style={{ color: 'green' }}>{loadingText}</p>}
       {validationMessage && <p style={{ color: 'red' }}>{validationMessage}</p>}
     </div>

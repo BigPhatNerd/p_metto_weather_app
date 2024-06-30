@@ -7,10 +7,10 @@ function WeatherDisplay() {
     useContext(UserContext)
 
   const [isFavorite, setIsFavorite] = useState(false)
+  const [showMaxWarning, setShowMaxWarning] = useState(false)
 
   useEffect(() => {
     if (location && favorites && favorites.length > 0) {
-      // Check if the location is already in favorites
       const exists = favorites.some(
         (fav) =>
           (fav.address &&
@@ -35,11 +35,17 @@ function WeatherDisplay() {
     }
   }, [location, favorites])
 
-  if (!weather) return null
+  useEffect(() => {
+    if (favorites.length >= 10) {
+      setShowMaxWarning(true)
+    } else {
+      setShowMaxWarning(false)
+    }
+  }, [favorites.length])
 
+  if (!weather) return null
   const iconUrl = `https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`
 
-  const maxFavorites = 10
   const tempFahrenheit = (temp) => ((temp - 273.15) * 1.8 + 32).toFixed(2)
 
   return (
@@ -70,19 +76,23 @@ function WeatherDisplay() {
           </p>
         </div>
       </div>
-      {!isFavorite &&
-        location.city &&
-        location.state &&
-        (favorites.length < maxFavorites ? (
-          <button onClick={() => addFavorite(location)}>
-            Add to Favorites
-          </button>
-        ) : (
-          <p style={{ color: 'red' }}>
-            You have reached the maximum number of favorites (10).
-          </p>
-        ))}
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+
+      {!isFavorite && location.city && location.state && (
+        <button
+          disabled={favorites.length >= 10}
+          onClick={() => addFavorite(location)}
+        >
+          Add to Favorites
+        </button>
+      )}
+      {showMaxWarning && (
+        <p style={{ color: 'red' }}>
+          You have reached the maximum number of favorites (10).
+        </p>
+      )}
+      {errorMessage && errorMessage.function === 'addFavorite' && (
+        <p style={{ color: 'red' }}>{errorMessage.message}</p>
+      )}
     </div>
   )
 }

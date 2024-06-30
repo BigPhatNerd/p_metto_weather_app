@@ -9,7 +9,10 @@ const UserProvider = ({ children }) => {
   const [favorites, setFavorites] = useState([])
   const [weather, setWeather] = useState(null)
   const [currentLocation, setCurrentLocation] = useState(null)
-  const [errorMessage, setErrorMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState({
+    message: '',
+    function: '',
+  })
   const [location, setLocation] = useState({
     address: '',
     city: '',
@@ -23,7 +26,7 @@ const UserProvider = ({ children }) => {
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => {
-        setErrorMessage('')
+        setErrorMessage({ message: '', function: '' })
       }, 3000)
       return () => clearTimeout(timer)
     }
@@ -37,15 +40,16 @@ const UserProvider = ({ children }) => {
       setCurrentLocation(response.data.currentLocation)
 
       //REMEMBER TO UNCOMMENT THIS
-      // if (response.data.currentLocation) {
-      //   const weatherData = await getWeather(response.data.currentLocation)
-      //   setWeather(weatherData)
-      // }
+      if (response.data.currentLocation) {
+        const weatherData = await getWeather(response.data.currentLocation)
+        setWeather(weatherData.data)
+      }
     } catch (error) {
       console.error(error)
-      setErrorMessage(
-        error.response ? error.response.data.message : error.message
-      )
+      setErrorMessage({
+        message: error.response ? error.response.data.message : error.message,
+        function: 'fetchUser',
+      })
     }
   }
 
@@ -61,9 +65,10 @@ const UserProvider = ({ children }) => {
       setCurrentLocation(response.data)
     } catch (error) {
       console.error(error)
-      setErrorMessage(
-        error.response ? error.response.data.message : error.message
-      )
+      setErrorMessage({
+        message: error.response ? error.response.data.message : error.message,
+        function: 'updateUserLocation',
+      })
     }
   }
 
@@ -92,7 +97,10 @@ const UserProvider = ({ children }) => {
         )
 
       if (exists) {
-        setErrorMessage('Location is already in favorites.')
+        setErrorMessage({
+          message: 'Location is already in favorites.',
+          function: 'addFavorite',
+        })
         return
       }
       const response = await axios.post('/api/user/favorites', { location })
@@ -105,9 +113,10 @@ const UserProvider = ({ children }) => {
       return response.data
     } catch (error) {
       console.error(error)
-      setErrorMessage(
-        error.response ? error.response.data.message : error.message
-      )
+      setErrorMessage({
+        message: error.response ? error.response.data.message : error.message,
+        function: 'addFavorite',
+      })
     }
   }
 
@@ -123,9 +132,10 @@ const UserProvider = ({ children }) => {
       }))
     } catch (error) {
       console.error(error)
-      setErrorMessage(
-        error.response ? error.response.data.message : error.message
-      )
+      setErrorMessage({
+        message: error.response ? error.response.data.message : error.message,
+        function: 'deleteFavorite',
+      })
     }
   }
 
@@ -137,11 +147,14 @@ const UserProvider = ({ children }) => {
         },
       })
       setWeather(response.data)
+      return { success: true, data: response.data }
     } catch (error) {
       console.error(error)
-      setErrorMessage(
-        error.response ? error.response.data.message : error.message
-      )
+      setErrorMessage({
+        message: error.response ? error.response.data.message : error.message,
+        function: 'getWeather',
+      })
+      return { success: false, error }
     }
   }
 
